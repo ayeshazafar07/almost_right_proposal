@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Faithfulness Metric: Research Proposal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#ECD7CF; --bg2:#E4C9C0;
+    --surface:#FBEDE7; --panel:#F5E1D9; --surface-2:#F1DBD2;
+    --ink:#3D1220; --ink-soft:#6E4550; --ink-faint:#9B7B82;
+    --line:#E0C9BF; --line-soft:#EAD6CD;
+    --rose:#ED809D; --rose-deep:#C24C72; --rose-soft:#F9D9E2;
+    --teal:#2FA39B; --teal-deep:#1C766F; --teal-soft:#CDE8E4;
+    --gold:#E0A63C; --gold-deep:#A87817; --gold-soft:#F3E2C0;
+    --alert:#C24A3A; --alert-soft:#F0D0C8;
+    --gray:#7C6B6E; --gray-soft:#E7DAD5;
+    --shadow:0 1px 2px rgba(61,18,32,.06), 0 12px 30px rgba(61,18,32,.09);
+    --shadow-sm:0 1px 2px rgba(61,18,32,.05), 0 4px 12px rgba(61,18,32,.06);
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:light; scroll-behavior:smooth}
+  body{background:linear-gradient(180deg,var(--bg) 0%, var(--bg2) 100%); background-attachment:fixed;
+    color:var(--ink); margin:0; font-family:"IBM Plex Sans",system-ui,sans-serif; line-height:1.6; -webkit-font-smoothing:antialiased}
+  a{color:var(--rose-deep)}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+
+  /* hero */
+  header{background:linear-gradient(135deg,#3D1220 0%, #5A1A2F 50%, #742443 100%); color:#F7E7E1; position:relative; overflow:hidden}
+  header::after{content:""; position:absolute; right:-80px; top:-80px; width:280px; height:280px; border-radius:50%;
+    background:radial-gradient(circle, rgba(237,128,157,.35), transparent 70%)}
+  .head-inner{max-width:1080px; margin:0 auto; padding:58px 26px 52px; position:relative; z-index:1}
+  .head-rule{height:6px; width:130px; margin-bottom:26px; border-radius:4px;
+    background:linear-gradient(90deg,var(--rose) 0 38%, var(--gold) 38% 66%, var(--teal) 66% 100%)}
+  .kicker{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--rose); margin:0 0 16px; font-weight:500}
+  h1{font-family:"Spectral",Georgia,serif; font-weight:500; font-size:clamp(2.2rem,6.5vw,3.7rem); line-height:1.02; letter-spacing:-.015em; margin:0; color:#FEF8F5; text-wrap:balance}
+  h1 em{font-style:italic; color:var(--rose)}
+  .subtitle{font-size:1.12rem; color:#ECD5CE; margin:20px 0 0; max-width:62ch}
+  .author{margin:24px 0 0; font-family:"IBM Plex Mono",monospace; font-size:13px; letter-spacing:.04em; color:#F0D8D1}
+
+  /* layout shell with sidebar */
+  .shell{display:flex; gap:34px; align-items:flex-start; max-width:1080px; margin:0 auto; padding:0 26px}
+  aside.toc{position:sticky; top:22px; align-self:flex-start; width:210px; flex:none; margin-top:30px}
+  .toc-inner{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px 14px; box-shadow:var(--shadow-sm)}
+  .toc-inner h4{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0 0 10px; padding-left:8px}
+  .toc-inner a{display:flex; align-items:baseline; gap:9px; padding:8px 10px; border-radius:9px; text-decoration:none;
+    color:var(--ink-soft); font-size:13.5px; border-left:3px solid transparent; transition:background .15s,color .15s}
+  .toc-inner a .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-faint); width:18px; flex:none}
+  .toc-inner a:hover{background:var(--rose-soft); color:var(--rose-deep)}
+  .toc-inner a.active{background:var(--rose-soft); color:var(--rose-deep); border-left-color:var(--rose); font-weight:600}
+  .toc-inner a.active .n{color:var(--rose-deep)}
+
+  main{flex:1; min-width:0; max-width:770px; padding-bottom:40px}
+  section{padding-top:46px; scroll-margin-top:24px}
+  .sec-head{display:flex; align-items:center; gap:14px; margin:0 0 6px}
+  .sec-num{flex:none; width:38px; height:38px; border-radius:11px; color:#fff;
+    background:linear-gradient(135deg,var(--rose), var(--rose-deep)); box-shadow:var(--shadow-sm);
+    display:flex; align-items:center; justify-content:center; font-family:"IBM Plex Mono",monospace; font-size:14px; font-weight:600}
+  h2{font-family:"Spectral",Georgia,serif; font-weight:600; font-size:1.72rem; letter-spacing:-.01em; margin:0; color:var(--ink); text-wrap:balance}
+  .sec-rule{height:3px; width:60px; border-radius:2px; margin:0 0 18px 52px; background:linear-gradient(90deg,var(--gold), var(--rose))}
+  h3{font-family:"Spectral",Georgia,serif; font-weight:600; font-size:1.18rem; margin:26px 0 8px; color:var(--ink)}
+  p{margin:0 0 14px; max-width:70ch}
+  strong{color:var(--ink); font-weight:600}
+  .muted{color:var(--ink-soft)}
+
+  .callout{background:linear-gradient(135deg,#3D1220, #56192D); color:#F8E9E3; border-radius:16px; padding:26px 28px; margin:6px 0 4px; box-shadow:var(--shadow); position:relative; overflow:hidden}
+  .callout::after{content:""; position:absolute; left:0; top:0; bottom:0; width:6px; background:linear-gradient(180deg,var(--rose),var(--gold))}
+  .callout .lab{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--rose); margin:0 0 8px}
+  .callout p{margin:0; max-width:none; font-family:"Spectral",serif; font-style:italic; font-size:1.24rem; line-height:1.5; color:#FDF3EF}
+  .callout em{color:var(--gold); font-style:italic}
+
+  .example{background:var(--panel); border:1px solid var(--line); border-left:5px solid var(--gold); border-radius:12px; padding:15px 18px; margin:14px 0; box-shadow:var(--shadow-sm); font-size:.98rem}
+  .example .src{color:var(--teal-deep); font-weight:600} .example .sum{color:var(--rose-deep); font-weight:600}
+
+  ul.clean{margin:6px 0 14px; padding-left:0; list-style:none}
+  ul.clean li{position:relative; padding-left:24px; margin:0 0 10px; max-width:70ch}
+  ul.clean li::before{content:""; position:absolute; left:2px; top:.55em; width:9px; height:9px; border-radius:3px; background:var(--rose)}
+  ul.clean li.t::before{background:var(--teal)} ul.clean li.g::before{background:var(--gold)}
+
+  .twrap{overflow-x:auto; margin:12px 0 6px; border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow-sm)}
+  table{border-collapse:collapse; width:100%; font-size:.92rem; min-width:540px; background:var(--surface)}
+  thead th{background:linear-gradient(135deg,#45152A,#3D1220); color:#F3DDD6}
+  th,td{text-align:left; padding:11px 14px; border-bottom:1px solid var(--line-soft); vertical-align:top}
+  th{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.05em; text-transform:uppercase; font-weight:500}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:nth-child(even){background:var(--surface-2)}
+  td b{color:var(--ink)}
+  .tag{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; padding:2px 9px; border-radius:20px; white-space:nowrap; font-weight:500}
+  .tag.b{background:var(--gray-soft); color:var(--gray); border:1px solid #D6C7C2}
+  .tag.n{background:var(--rose-soft); color:var(--rose-deep); border:1px solid var(--rose)}
+  .tag.k{background:var(--gold-soft); color:var(--gold-deep); border:1px solid var(--gold)}
+
+  ol.steps{counter-reset:s; list-style:none; margin:10px 0 6px; padding:0}
+  ol.steps li{position:relative; padding:0 0 12px 46px; margin:0; max-width:70ch}
+  ol.steps li::before{counter-increment:s; content:counter(s); position:absolute; left:0; top:-2px; width:30px; height:30px; border-radius:9px;
+    background:var(--rose-soft); color:var(--rose-deep); border:1.5px solid var(--rose); display:flex; align-items:center; justify-content:center;
+    font-family:"IBM Plex Mono",monospace; font-size:13px; font-weight:600}
+
+  figure{margin:18px 0 6px; background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); overflow:hidden}
+  .figbar{padding:13px 20px; color:#fff; display:flex; align-items:baseline; gap:10px; flex-wrap:wrap}
+  .figbar.rose{background:linear-gradient(135deg,var(--rose),var(--rose-deep))}
+  .figbar.teal{background:linear-gradient(135deg,var(--teal),var(--teal-deep))}
+  .figbar.gold{background:linear-gradient(135deg,var(--gold),var(--gold-deep))}
+  .figbar .n{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; opacity:.9}
+  .figbar .t{font-family:"Spectral",serif; font-weight:600; font-size:1.12rem}
+  .figbody{padding:20px 18px 8px; background:var(--panel)}
+  .figbody.scroll{overflow-x:auto}
+  figure svg{width:100%; height:auto; display:block; color:var(--ink-soft)}
+  figcaption{padding:12px 20px 16px; background:var(--surface); font-size:12.5px; color:var(--ink-faint); line-height:1.5}
+  figcaption b{color:var(--ink-soft)}
+  .flegend{display:flex; flex-wrap:wrap; gap:8px 18px; padding:10px 20px 4px; background:var(--surface); font-size:12px; color:var(--ink-soft)}
+  .flegend .k{display:inline-flex; align-items:center; gap:6px}
+  .box{width:12px;height:12px;border-radius:3px;flex:none;border:1.5px solid}
+  .bx-n{background:var(--rose-soft);border-color:var(--rose)} .bx-b{background:var(--gray-soft);border-color:var(--gray)} .bx-g{background:var(--gold-soft);border-color:var(--gold)}
+
+  .papers{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:10px 0 6px}
+  .paper{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:15px 17px; box-shadow:var(--shadow-sm); border-top:4px solid var(--teal)}
+  .paper.up{border-top-color:var(--rose)}
+  .paper .top{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 10px; margin-bottom:4px}
+  .paper .pid{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--ink-faint); letter-spacing:.05em}
+  .paper h4{font-family:"Spectral",serif; font-weight:600; font-size:1.06rem; margin:0; flex:1 1 auto; min-width:120px; color:var(--ink)}
+  .paper p{margin:2px 0 0; font-size:.9rem; color:var(--ink-soft); max-width:none}
+  .role{font-family:"IBM Plex Mono",monospace; font-size:9.5px; padding:2px 8px; border-radius:20px; white-space:nowrap}
+  .role.floor{background:var(--teal-soft); color:var(--teal-deep); border:1px solid var(--teal)}
+  .role.up{background:var(--rose-soft); color:var(--rose-deep); border:1px solid var(--rose)}
+
+  .tl{border-left:3px solid var(--line); margin:12px 0 6px; padding-left:22px}
+  .tl .row{position:relative; margin:0 0 15px}
+  .tl .row::before{content:""; position:absolute; left:-30px; top:4px; width:13px; height:13px; border-radius:50%; background:var(--gold); border:3px solid var(--bg)}
+  .tl .row.k::before{background:var(--rose)}
+  .tl .ph{font-weight:600; color:var(--ink)}
+  .tl .dur{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--teal-deep); margin-left:8px}
+  .tl .d{font-size:.93rem; color:var(--ink-soft)}
+
+  .note{background:var(--alert-soft); border:1px solid #E0B7AE; border-left:5px solid var(--alert); border-radius:12px; padding:16px 20px; margin:14px 0; box-shadow:var(--shadow-sm)}
+  .note .lab{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--alert); margin:0 0 6px; font-weight:500}
+  .note p{margin:0; max-width:none}
+
+  .refs li{margin-bottom:6px; font-size:.9rem; color:var(--ink-soft)}
+
+  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:16px 0}
+  .stat{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; box-shadow:var(--shadow-sm); border-top:4px solid var(--gray)}
+  .stat.teal{border-top-color:var(--teal)} .stat.alert{border-top-color:var(--alert)} .stat.rose{border-top-color:var(--rose)}
+  .stat .v{font-family:"Spectral",serif; font-weight:600; font-size:1.5rem; color:var(--ink); line-height:1.1}
+  .stat.teal .v{color:var(--teal-deep)} .stat.alert .v{color:var(--alert)} .stat.rose .v{color:var(--rose-deep)}
+  .stat .l{font-size:12px; color:var(--ink-soft); margin-top:6px; line-height:1.4}
+  @media(max-width:600px){.stats{grid-template-columns:1fr}}
+  .contact{background:linear-gradient(135deg,#3D1220 0%, #5A1B30 100%); color:#F3E4DF; border-radius:18px; padding:32px 30px; margin-top:48px; margin-bottom:48px; box-shadow:var(--shadow)}
+  .contact .head-rule{margin-bottom:18px}
+  .contact h2{color:#FEF8F5}
+  .contact .row{display:flex; flex-wrap:wrap; gap:14px 30px; margin-top:14px}
+  .contact .item .lab{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--rose); display:block; margin-bottom:3px}
+  .contact a{color:#FAD9E1; text-decoration:none}
+  .contact .who{color:#FBEFEB; font-size:1rem}
+
+  @media (max-width:900px){
+    .shell{flex-direction:column; gap:0; padding:0}
+    aside.toc{position:sticky; top:0; width:100%; margin-top:0; z-index:30}
+    .toc-inner{border-radius:0; border-left:none; border-right:none; border-top:none; padding:8px 12px;
+      display:flex; gap:2px; overflow-x:auto; scrollbar-width:none; background:rgba(59,18,32,.97); backdrop-filter:blur(4px)}
+    .toc-inner::-webkit-scrollbar{display:none}
+    .toc-inner h4{display:none}
+    .toc-inner a{flex:none; white-space:nowrap; color:#E9CFC9; border-left:none; border-bottom:2px solid transparent; border-radius:0; padding:9px 10px}
+    .toc-inner a .n{display:none}
+    .toc-inner a:hover,.toc-inner a.active{background:transparent; color:#FEF3EF; border-bottom-color:var(--gold)}
+    main{padding-inline:22px; max-width:none}
+    section{scroll-margin-top:60px}
+    .papers{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-inner">
+    <div class="head-rule"></div>
+    <p class="kicker">PhD Research Proposal · NLP / Faithfulness Evaluation</p>
+    <h1>Right quote,<br><em>wrong conclusion</em></h1>
+    <p class="subtitle">A proposed causal metric for detecting intrinsic hallucination: the case where a language model quotes the source correctly but draws a conclusion it never supports.</p>
+    <p class="author">Ayesha Zafar</p>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="toc" aria-label="Sections">
+    <div class="toc-inner">
+      <h4>Contents</h4>
+      <a href="#problem"><span class="n">01</span>Problem</a>
+      <a href="#gap"><span class="n">02</span>Gap</a>
+      <a href="#clinical"><span class="n">03</span>Clinical</a>
+      <a href="#approach"><span class="n">04</span>Approach</a>
+      <a href="#novelty"><span class="n">05</span>Novelty</a>
+      <a href="#plan"><span class="n">06</span>Plan</a>
+      <a href="#validation"><span class="n">07</span>Validation</a>
+      <a href="#timeline"><span class="n">08</span>Timeline</a>
+      <a href="#references"><span class="n">09</span>References</a>
+      <a href="#contact"><span class="n">·</span>Contact</a>
+    </div>
+  </aside>
+
+  <main>
+
+  <section style="padding-top:34px">
+    <div class="callout">
+      <p class="lab">The idea in one line</p>
+      <p>An honest conclusion needs its evidence to stand; a hallucinated one does not, so we remove the evidence <em>inside the model</em> and measure which conclusions fall.</p>
+    </div>
+  </section>
+
+  <section id="problem">
+    <div class="sec-head"><span class="sec-num">01</span><h2>The problem</h2></div>
+    <div class="sec-rule"></div>
+    <p>When a language model summarizes a document, it sometimes copies a real fact correctly but stretches it into a claim the source never made. The fact is present, even attended to, so the output <em>looks</em> grounded, yet the inference is wrong.</p>
+    <div class="example">
+      <span class="src">Source:</span> “sales rose in one store.” &nbsp;→&nbsp; <span class="sum">Summary:</span> “sales rose company-wide.”<br>
+      <span class="muted">The quote is real; the conclusion is an over-reach.</span>
+    </div>
+    <p>This is an <strong>intrinsic hallucination</strong>: an inference error, not a fabricated fact. It recurs in a few shapes:</p>
+    <ul class="clean">
+      <li><strong>Over-generalization:</strong> one case presented as all cases.</li>
+      <li class="t"><strong>Causal reversal:</strong> “A caused B” becomes “B caused A”.</li>
+      <li class="g"><strong>Scope / quantity shift:</strong> “some” becomes “most”.</li>
+      <li><strong>False certainty:</strong> “may” becomes “does”.</li>
+      <li class="t"><strong>Wrong attribution:</strong> a claim tied to the wrong agent or time.</li>
+    </ul>
+  </section>
+
+  <section id="gap">
+    <div class="sec-head"><span class="sec-num">02</span><h2>The gap</h2></div>
+    <div class="sec-rule"></div>
+    <p>Existing metrics ask a version of <em>“is the fact supported?”</em>, which is answerable by surface correlation. They catch coarse errors but degrade on subtle inference. Specifically they miss:</p>
+    <ul class="clean">
+      <li><strong>Subtle inference errors:</strong> the quote matches, so overlap and entailment checks pass the over-reach.</li>
+      <li class="t"><strong>Distributed evidence:</strong> support spread across non-adjacent sentences.</li>
+      <li class="g"><strong>Surface shortcuts:</strong> detectors often ride dataset artifacts and collapse out-of-distribution (Dubanowska et al., EMNLP 2025). Our error has no surface cue.</li>
+      <li><strong>The gray zone:</strong> over-reach is a matter of degree, so labels themselves get unreliable (VeriGray, 2025).</li>
+    </ul>
+    <div class="twrap">
+    <table>
+      <thead><tr><th>Method</th><th>How it checks</th><th></th></tr></thead>
+      <tbody>
+        <tr><td><b>SummaC / INFUSE</b></td><td>sentence / sub-sentence entailment (NLI)</td><td><span class="tag b">borrowed</span></td></tr>
+        <tr><td><b>QuestEval / QAFactEval</b></td><td>questions from summary, answered from source, compared</td><td><span class="tag b">borrowed</span></td></tr>
+        <tr><td><b>FactScore</b></td><td>split into atomic facts, check each is supported</td><td><span class="tag b">borrowed</span></td></tr>
+        <tr><td><b>MiniCheck</b></td><td>small fast model judging if a claim is grounded</td><td><span class="tag b">borrowed</span></td></tr>
+        <tr><td><b>HalluTree</b> (2025)</td><td>route extractive vs inferential; verify with reasoning chains</td><td><span class="tag k">closest</span></td></tr>
+        <tr><td><b>ReDeeP</b> (ICLR 2025)</td><td>internal context vs parametric reliance signal for RAG</td><td><span class="tag k">nearest</span></td></tr>
+        <tr><td><b>Observer probe</b> (2025)</td><td>linear probe on hidden states flags unsupported text</td><td><span class="tag b">extend</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section id="clinical">
+    <div class="sec-head"><span class="sec-num">03</span><h2>Clinical relevance</h2></div>
+    <div class="sec-rule"></div>
+    <p>The method is domain-independent, but clinical summarization is where this error does the most damage and where catching it is most useful. Discharge notes, referral letters and care-record summaries are read as if they were the record itself, so a conclusion that quietly overshoots its evidence can change what a clinician believes about a patient. In most applications an imperfect answer is annoying; in a care record, “almost right” can be a safety event.</p>
+    <div class="example" style="border-left-color:var(--teal)">
+      <span class="src">Record:</span> a symptom is noted at a single visit. &nbsp;→&nbsp; <span class="sum">Summary:</span> “the patient has an ongoing condition.”<br>
+      <span class="muted">The symptom is in the record. Nothing is fabricated. The evidence is real; the conclusion overshoots it, and the clinical meaning changes.</span>
+    </div>
+    <p>The same shapes recur across clinical text: a discontinued medication reported as ongoing (temporal), a one-off finding read as a persistent condition (scope), a relative’s history attributed to the patient (attribution). These are exactly the cases surface and entailment checks wave through, because the quote is present.</p>
+    <h3>What clinical use demands</h3>
+    <div class="stats">
+      <div class="stat teal"><div class="v">Per-claim</div><div class="l">the exact unsupported statement must be flagged so a clinician can act on it, not just one overall score</div></div>
+      <div class="stat alert"><div class="v">Meaning-sensitive</div><div class="l">it must catch errors that change clinical meaning while passing surface and entailment checks</div></div>
+      <div class="stat rose"><div class="v">Reference-free</div><div class="l">it must work at deployment, where no gold summary exists for a clinician to compare against</div></div>
+    </div>
+    <p class="muted">The approach that follows is built to meet exactly these demands, and its clinical instantiation runs through the plan: a longitudinal benchmark slice (medication timelines, discontinued-then-referenced events, cross-record contradictions), expert-in-the-loop clinical usefulness ratings, and a Finnish and English cross-lingual extension.</p>
+  </section>
+
+  <section id="approach">
+    <div class="sec-head"><span class="sec-num">04</span><h2>The approach: a causal metric</h2></div>
+    <div class="sec-rule"></div>
+    <p>Instead of asking <em>“is the fact present?”</em>, the metric asks <strong>“does the model’s endorsement of the conclusion causally depend on the evidence?”</strong> A licensed inference collapses when its evidence is removed; an over-reach does not, because it never truly rested on it.</p>
+
+    <figure>
+      <div class="figbar rose"><span class="n">The core test</span><span class="t">Hide the evidence, watch the conclusion</span></div>
+      <div class="figbody scroll">
+      <svg viewBox="0 0 680 250" role="img" aria-label="With the evidence present the reader model endorses the conclusion, giving a baseline score; when the evidence is hidden inside the model, a faithful conclusion's endorsement drops while an over-reaching one stays unchanged, and that difference is the metric.">
+        <defs>
+          <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><polygon points="0,1 8,4.5 0,8" fill="currentColor"/></marker>
+          <marker id="ahT" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><polygon points="0,1 8,4.5 0,8" fill="var(--teal-deep)"/></marker>
+          <marker id="ahA" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><polygon points="0,1 8,4.5 0,8" fill="var(--alert)"/></marker>
+        </defs>
+        <text x="0" y="24" class="mono" font-size="11" fill="var(--teal-deep)">A · EVIDENCE KEPT</text>
+        <rect x="0" y="34" width="120" height="42" rx="6" fill="var(--surface)" stroke="var(--ink-soft)"/>
+        <text x="60" y="53" text-anchor="middle" font-size="12" fill="var(--ink)">evidence +</text>
+        <text x="60" y="68" text-anchor="middle" font-size="12" fill="var(--ink)">claim</text>
+        <line x1="120" y1="55" x2="176" y2="55" stroke="currentColor" stroke-width="1.5" marker-end="url(#ah)"/>
+        <rect x="178" y="34" width="120" height="42" rx="6" fill="var(--surface)" stroke="var(--ink-soft)"/>
+        <text x="238" y="60" text-anchor="middle" font-size="12" fill="var(--ink)">reader model</text>
+        <line x1="298" y1="55" x2="354" y2="55" stroke="currentColor" stroke-width="1.5" marker-end="url(#ah)"/>
+        <text x="362" y="51" font-size="12" fill="var(--ink)">endorses conclusion</text>
+        <text x="362" y="68" class="mono" font-size="10.5" fill="var(--ink-faint)">baseline score</text>
+        <line x1="0" y1="102" x2="680" y2="102" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4"/>
+        <text x="0" y="130" class="mono" font-size="11" fill="var(--alert)">B · EVIDENCE HIDDEN INSIDE THE MODEL</text>
+        <rect x="0" y="140" width="120" height="42" rx="6" fill="var(--surface)" stroke="var(--ink-soft)" stroke-dasharray="4 3"/>
+        <text x="60" y="159" text-anchor="middle" font-size="12" fill="var(--ink-faint)">evidence ✕</text>
+        <text x="60" y="174" text-anchor="middle" font-size="12" fill="var(--ink)">claim</text>
+        <line x1="120" y1="161" x2="176" y2="161" stroke="currentColor" stroke-width="1.5" marker-end="url(#ah)"/>
+        <rect x="178" y="140" width="120" height="42" rx="6" fill="var(--surface)" stroke="var(--ink-soft)"/>
+        <text x="238" y="166" text-anchor="middle" font-size="12" fill="var(--ink)">reader model</text>
+        <line x1="298" y1="154" x2="352" y2="138" stroke="var(--teal-deep)" stroke-width="2" marker-end="url(#ahT)"/>
+        <text x="362" y="134" font-size="12" fill="var(--teal-deep)" font-weight="600">score drops → grounded ✓</text>
+        <text x="362" y="150" class="mono" font-size="10.5" fill="var(--ink-faint)">faithful inference</text>
+        <line x1="298" y1="168" x2="352" y2="184" stroke="var(--alert)" stroke-width="2" marker-end="url(#ahA)"/>
+        <text x="362" y="184" font-size="12" fill="var(--alert)" font-weight="600">unchanged → over-reach ⚑</text>
+        <text x="362" y="200" class="mono" font-size="10.5" fill="var(--ink-faint)">flag as hallucination</text>
+        <text x="0" y="234" font-size="11.5" fill="var(--ink-faint)">The <tspan font-weight="600" fill="var(--ink-soft)">difference</tspan> between A and B is the metric. Surface wording cannot fake it.</text>
+      </svg>
+      </div>
+      <figcaption><b>The grounding-dependence test.</b> Existing probes only <i>read</i> an internal signal; this <i>intervenes</i>, removing the premise inside the model and measuring how much the conclusion depended on it.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="figbar teal"><span class="n">Runtime pipeline</span><span class="t">Source + summary to faithfulness score</span></div>
+      <div class="figbody scroll">
+      <svg viewBox="0 0 860 950" role="img" aria-label="Runtime pipeline: the summary is split into atomic claims; each is classified extractive or inferential; extractive claims take a cheap NLI check; inferential claims have their evidence gathered from the source, then run through the reader model twice, once with evidence kept and once hidden; the drop in endorsement decides grounded, over-reach, or abstain; all verdicts aggregate into a faithfulness score.">
+        <defs>
+          <marker id="p" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><polygon points="0,1 8,4.5 0,8" fill="currentColor"/></marker>
+          <marker id="pR" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><polygon points="0,1 8,4.5 0,8" fill="var(--rose-deep)"/></marker>
+        </defs>
+        <rect x="40" y="20" width="220" height="48" rx="8" fill="var(--rose-soft)" stroke="var(--rose)" stroke-width="2"/>
+        <text x="150" y="49" text-anchor="middle" font-size="13" fill="var(--ink)" font-weight="600">Source document</text>
+        <rect x="315" y="20" width="230" height="48" rx="8" fill="var(--rose-soft)" stroke="var(--rose)" stroke-width="2"/>
+        <text x="430" y="49" text-anchor="middle" font-size="13" fill="var(--ink)" font-weight="600">Summary</text>
+        <path d="M430,68 L430,106" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#p)"/>
+        <text x="446" y="91" font-size="10.5" fill="var(--ink-faint)">split</text>
+        <rect x="315" y="108" width="230" height="48" rx="8" fill="var(--surface)" stroke="var(--gray)" stroke-width="1.6"/>
+        <text x="430" y="130" text-anchor="middle" font-size="12.5" fill="var(--ink)" font-weight="600">Split into atomic claims</text>
+        <text x="430" y="147" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)">one conclusion at a time</text>
+        <path d="M430,156 L430,184" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#p)"/>
+        <polygon points="430,186 560,228 430,270 300,228" fill="var(--gold-soft)" stroke="var(--gold-deep)" stroke-width="1.8"/>
+        <text x="430" y="224" text-anchor="middle" font-size="11.5" fill="var(--ink)" font-weight="600">extractive or</text>
+        <text x="430" y="240" text-anchor="middle" font-size="11.5" fill="var(--ink)" font-weight="600">inferential?</text>
+        <path d="M560,228 L593,228" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#p)"/>
+        <text x="577" y="220" text-anchor="middle" font-size="10" fill="var(--ink-faint)">copied</text>
+        <rect x="595" y="202" width="215" height="52" rx="8" fill="var(--gray-soft)" stroke="var(--gray)" stroke-width="1.6"/>
+        <text x="702" y="224" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">Cheap NLI check</text>
+        <text x="702" y="241" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">is it in the source?</text>
+        <path d="M430,270 L430,314" fill="none" stroke="currentColor" stroke-width="1.8" marker-end="url(#p)"/>
+        <text x="452" y="296" font-size="10.5" fill="var(--ink-faint)">drew a conclusion</text>
+        <rect x="300" y="316" width="260" height="56" rx="8" fill="var(--surface)" stroke="var(--gray)" stroke-width="1.6"/>
+        <text x="430" y="340" text-anchor="middle" font-size="12.5" fill="var(--ink)" font-weight="600">Gather its evidence (multi-hop)</text>
+        <text x="430" y="358" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)">all source spans it should rest on</text>
+        <path d="M150,68 C150,240 175,330 298,344" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#p)"/>
+        <text x="150" y="250" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)">pull spans</text>
+        <path d="M400,372 C360,398 340,404 330,416" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#p)"/>
+        <path d="M470,372 C520,398 545,404 560,416" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#p)"/>
+        <text x="430" y="400" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)">same claim, both passes</text>
+        <rect x="230" y="418" width="185" height="66" rx="9" fill="var(--surface)" stroke="var(--gray)" stroke-width="1.8"/>
+        <text x="322" y="443" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">Reader model</text>
+        <text x="322" y="461" text-anchor="middle" font-size="11" fill="var(--ink-soft)">evidence KEPT</text>
+        <text x="322" y="477" text-anchor="middle" class="mono" font-size="10.5" fill="var(--ink-faint)">score s_full</text>
+        <rect x="455" y="418" width="205" height="66" rx="9" fill="var(--rose-soft)" stroke="var(--rose)" stroke-width="2.2"/>
+        <text x="557" y="443" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">Reader model ✦</text>
+        <text x="557" y="461" text-anchor="middle" font-size="11" fill="var(--rose-deep)">evidence HIDDEN (patched)</text>
+        <text x="557" y="477" text-anchor="middle" class="mono" font-size="10.5" fill="var(--ink-faint)">score s_hidden</text>
+        <path d="M322,484 C350,512 370,516 400,534" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#p)"/>
+        <path d="M557,484 C520,512 500,516 470,534" fill="none" stroke="var(--rose-deep)" stroke-width="1.6" marker-end="url(#pR)"/>
+        <rect x="320" y="536" width="220" height="48" rx="9" fill="var(--rose)" stroke="none"/>
+        <text x="430" y="559" text-anchor="middle" font-size="12.5" fill="#4A0E22" font-weight="600">Δ = s_full − s_hidden</text>
+        <text x="430" y="575" text-anchor="middle" font-size="10.5" fill="#5E1229">how much it leaned on evidence</text>
+        <path d="M430,584 L430,610" fill="none" stroke="currentColor" stroke-width="1.8" marker-end="url(#p)"/>
+        <polygon points="430,612 560,660 430,708 300,660" fill="var(--gold-soft)" stroke="var(--gold-deep)" stroke-width="2"/>
+        <text x="430" y="656" text-anchor="middle" font-size="11.5" fill="var(--ink)" font-weight="600">big drop?</text>
+        <text x="430" y="672" text-anchor="middle" font-size="10" fill="var(--ink-soft)">(vs threshold)</text>
+        <path d="M360,694 C290,724 250,730 222,744" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#p)"/>
+        <text x="250" y="720" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)">yes → grounded</text>
+        <rect x="95" y="746" width="180" height="48" rx="8" fill="var(--teal-soft)" stroke="var(--teal-deep)" stroke-width="1.8"/>
+        <text x="185" y="775" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">Supported ✓</text>
+        <path d="M430,708 L430,744" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#p)"/>
+        <text x="470" y="730" text-anchor="middle" font-size="10.5" fill="var(--alert)" font-weight="600">no</text>
+        <rect x="340" y="746" width="185" height="48" rx="8" fill="var(--alert-soft)" stroke="var(--alert)" stroke-width="1.8"/>
+        <text x="432" y="775" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">Over-reach ⚑</text>
+        <path d="M500,694 C575,724 615,730 645,744" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#p)"/>
+        <text x="628" y="720" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)">unsure</text>
+        <rect x="590" y="746" width="160" height="48" rx="8" fill="var(--panel)" stroke="var(--gray)" stroke-width="1.6" stroke-dasharray="5 4"/>
+        <text x="670" y="775" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">Abstain</text>
+        <rect x="250" y="862" width="360" height="54" rx="9" fill="var(--rose-soft)" stroke="var(--rose)" stroke-width="2"/>
+        <text x="430" y="886" text-anchor="middle" font-size="13" fill="var(--ink)" font-weight="600">Faithfulness score + flagged claims</text>
+        <text x="430" y="904" text-anchor="middle" font-size="10.5" fill="var(--rose-deep)">combine every claim’s verdict</text>
+        <path d="M185,794 C185,835 260,852 320,866" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#p)"/>
+        <path d="M432,794 L432,858" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#p)"/>
+        <path d="M670,794 C670,835 610,852 560,866" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#p)"/>
+        <path d="M760,254 C800,470 800,760 612,884" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#p)"/>
+        <text x="800" y="500" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)">quick label</text>
+      </svg>
+      </div>
+      <div class="flegend">
+        <span class="k"><span class="box bx-n"></span> ✦ new: the two-pass test &amp; Δ</span>
+        <span class="k"><span class="box bx-b"></span> borrowed: standard steps</span>
+        <span class="k"><span class="box bx-g"></span> ◇ decision</span>
+      </div>
+      <figcaption><b>Only claims that draw a conclusion reach the two-pass test.</b> Copied facts take the cheap check on the right. A one-time setup trains a probe on contrastive pairs (fair vs over-reach) to define the score read-out and threshold.</figcaption>
+    </figure>
+
+    <p><span class="tag n">new</span> the <strong>causal grounding-dependence test</strong>: ablate the specific evidence, use the endorsement drop as the score, plus the controlled minimal-pair benchmark. &nbsp; <span class="tag b">borrowed</span> claim decomposition, extractive/inferential routing, multi-hop gathering, observer probe, VeriGray labels, conformal abstention, activation-patching tooling.</p>
+  </section>
+
+  <section id="novelty">
+    <div class="sec-head"><span class="sec-num">05</span><h2>Novelty &amp; honest positioning</h2></div>
+    <div class="sec-rule"></div>
+    <p>Scoped against what already exists, not around it:</p>
+    <ul class="clean">
+      <li><strong>ReDeeP (ICLR 2025)</strong> detects RAG hallucination from a <em>correlational</em> internal reliance signal. Our distinction is a genuine <em>ablation</em> with the endorsement drop as the score.</li>
+      <li class="t"><strong>ContextFocus (2026) &amp; “the knob” (2024)</strong> already steer generation along a context-reliance direction, so steering-based mitigation is largely pre-empted, and the direction’s existence is established (good for feasibility, not novelty).</li>
+      <li class="g"><strong>The sharpest wedge:</strong> all prior work targets <em>knowledge conflict</em>, the model ignoring context. Our error is the opposite: the model <em>uses</em> the quote but reasons wrongly from it. A “was the context attended?” signal passes our case, so this failure mode is unclaimed.</li>
+    </ul>
+    <div class="note">
+      <p class="lab">The central risk, stated plainly</p>
+      <p>The property that makes this case distinctive may also make activation methods fail on it: if the evidence is genuinely used, a “how much does it depend on the evidence?” signal could look identical for a fair conclusion and an over-reach. Whether the signal separates them is an open question, which is why the plan front-loads a falsification pilot. The most durable contributions are the <strong>benchmark</strong> and the <strong>error-type framing</strong>.</p>
+    </div>
+  </section>
+
+  <section id="plan">
+    <div class="sec-head"><span class="sec-num">06</span><h2>The plan: six potential papers</h2></div>
+    <div class="sec-rule"></div>
+    <p>These are proposed papers, not finished work. The structure keeps the <span class="tag" style="background:var(--teal-soft);color:var(--teal-deep);border:1px solid var(--teal)">floor</span> papers standing regardless of the core bet, and marks the <span class="tag n">upside</span> papers that depend on it, so a defensible baseline (the survey, the benchmark, and the robustness study, plus a pivot paper) survives even a negative result.</p>
+
+    <figure>
+      <div class="figbar gold"><span class="n">End-to-end</span><span class="t">Potential papers &amp; the two decision gates</span></div>
+      <div class="figbody scroll">
+      <svg viewBox="0 0 860 720" role="img" aria-label="The problem defines the survey and the benchmark; the benchmark's minimal-pair data feeds a pilot gate asking whether hiding evidence separates fair from over-reached conclusions; no pivots to a why-methods-fail paper, yes builds the metric from borrowed parts plus the new causal test; a robustness gate either loops back to refine or proceeds to mitigation and distillation, all feeding the outputs.">
+        <defs>
+          <marker id="f" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><polygon points="0,1 8,4.5 0,8" fill="currentColor"/></marker>
+          <marker id="fA" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><polygon points="0,1 8,4.5 0,8" fill="var(--alert)"/></marker>
+        </defs>
+        <rect x="300" y="16" width="260" height="46" rx="8" fill="var(--rose-soft)" stroke="var(--rose)" stroke-width="2"/>
+        <text x="430" y="37" text-anchor="middle" font-size="12.5" fill="var(--ink)" font-weight="600">The problem</text>
+        <text x="430" y="53" text-anchor="middle" font-size="11" fill="var(--rose-deep)">right quote · wrong conclusion</text>
+        <path d="M370,62 C320,86 250,92 220,116" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#f)"/>
+        <path d="M490,62 C560,86 620,92 645,116" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#f)"/>
+        <rect x="70" y="118" width="290" height="54" rx="8" fill="var(--surface)" stroke="var(--gold-deep)" stroke-width="2"/>
+        <text x="215" y="141" text-anchor="middle" font-size="12.5" fill="var(--ink)" font-weight="600">P1 · Survey &amp; gap map</text>
+        <text x="215" y="159" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">names the exact gap</text>
+        <rect x="500" y="118" width="290" height="54" rx="8" fill="var(--rose-soft)" stroke="var(--gold-deep)" stroke-width="2"/>
+        <text x="645" y="141" text-anchor="middle" font-size="12.5" fill="var(--ink)" font-weight="600">P2 · Benchmark ✦</text>
+        <text x="645" y="159" text-anchor="middle" font-size="10.5" fill="var(--rose-deep)">minimal-pair test set</text>
+        <path d="M610,172 C520,200 480,206 452,226" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#f)"/>
+        <text x="548" y="206" text-anchor="middle" font-size="10" fill="var(--ink-faint)">test pairs</text>
+        <path d="M200,172 C150,240 210,250 300,300" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#f)"/>
+        <text x="150" y="230" text-anchor="middle" font-size="10" fill="var(--ink-faint)">frames</text>
+        <polygon points="430,218 560,260 430,302 300,260" fill="var(--gold-soft)" stroke="var(--gold-deep)" stroke-width="2"/>
+        <text x="430" y="256" text-anchor="middle" font-size="11.5" fill="var(--ink)" font-weight="600">Pilot gate</text>
+        <text x="430" y="272" text-anchor="middle" font-size="9.5" fill="var(--ink-soft)">does hiding evidence separate?</text>
+        <path d="M300,260 L242,260" fill="none" stroke="var(--alert)" stroke-width="1.8" marker-end="url(#fA)"/>
+        <text x="271" y="252" text-anchor="middle" font-size="10.5" fill="var(--alert)" font-weight="600">no</text>
+        <rect x="40" y="232" width="200" height="56" rx="8" fill="var(--panel)" stroke="var(--alert)" stroke-width="1.6" stroke-dasharray="5 4"/>
+        <text x="140" y="256" text-anchor="middle" font-size="11.5" fill="var(--ink)" font-weight="600">Pivot paper</text>
+        <text x="140" y="273" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">why methods fail</text>
+        <path d="M430,302 L430,338" fill="none" stroke="currentColor" stroke-width="1.8" marker-end="url(#f)"/>
+        <text x="446" y="324" font-size="10.5" fill="var(--ink-faint)">yes</text>
+        <rect x="300" y="340" width="260" height="60" rx="10" fill="var(--rose-soft)" stroke="var(--rose)" stroke-width="2.2"/>
+        <text x="430" y="365" text-anchor="middle" font-size="13" fill="var(--ink)" font-weight="600">P3 · The metric ✦ (core)</text>
+        <text x="430" y="384" text-anchor="middle" font-size="10.5" fill="var(--rose-deep)">causal grounding-dependence test</text>
+        <rect x="600" y="345" width="220" height="50" rx="8" fill="var(--gray-soft)" stroke="var(--gray)" stroke-width="1.6"/>
+        <text x="710" y="366" text-anchor="middle" font-size="11" fill="var(--ink)" font-weight="600">Borrowed parts</text>
+        <text x="710" y="383" text-anchor="middle" font-size="9.5" fill="var(--ink-soft)">decomposition · graph · probe</text>
+        <path d="M600,370 L562,370" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#f)"/>
+        <text x="581" y="362" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)">reuse</text>
+        <path d="M430,400 L430,432" fill="none" stroke="currentColor" stroke-width="1.8" marker-end="url(#f)"/>
+        <text x="530" y="422" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)">faithfulness labels</text>
+        <polygon points="430,434 560,476 430,518 300,476" fill="var(--gold-soft)" stroke="var(--gold-deep)" stroke-width="2"/>
+        <text x="430" y="472" text-anchor="middle" font-size="11.5" fill="var(--ink)" font-weight="600">Robustness gate</text>
+        <text x="430" y="488" text-anchor="middle" font-size="9.5" fill="var(--ink-soft)">holds on new data (OOD)?</text>
+        <path d="M560,476 C650,458 660,410 590,392" fill="none" stroke="var(--alert)" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#fA)"/>
+        <text x="648" y="430" text-anchor="middle" font-size="10.5" fill="var(--alert)" font-weight="600">no → refine</text>
+        <path d="M392,512 C320,548 260,556 224,586" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#f)"/>
+        <text x="250" y="548" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)">yes · steer</text>
+        <path d="M468,512 C560,548 610,556 645,586" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#f)"/>
+        <text x="628" y="548" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)">distil / port</text>
+        <rect x="70" y="588" width="290" height="54" rx="8" fill="var(--surface)" stroke="var(--rose)" stroke-width="2"/>
+        <text x="215" y="611" text-anchor="middle" font-size="12.5" fill="var(--ink)" font-weight="600">P5 · Mitigation</text>
+        <text x="215" y="629" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">steer off over-reach</text>
+        <rect x="500" y="588" width="290" height="54" rx="8" fill="var(--surface)" stroke="var(--rose)" stroke-width="2"/>
+        <text x="645" y="611" text-anchor="middle" font-size="12.5" fill="var(--ink)" font-weight="600">P6 · Fast &amp; portable</text>
+        <text x="645" y="629" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">distil + other tasks</text>
+        <path d="M215,642 C260,672 320,680 352,690" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#f)"/>
+        <path d="M645,642 C600,672 540,680 508,690" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#f)"/>
+        <rect x="300" y="682" width="260" height="34" rx="8" fill="var(--ink)" stroke="none"/>
+        <text x="430" y="704" text-anchor="middle" font-size="12" fill="#FCEDE7" font-weight="600">4–6 papers + deployable metric</text>
+      </svg>
+      </div>
+      <div class="flegend">
+        <span class="k"><span class="box bx-n"></span> ✦ new contribution</span>
+        <span class="k"><span class="box bx-b"></span> borrowed</span>
+        <span class="k"><span class="box bx-g"></span> ◇ decision gate</span>
+        <span class="k"><span class="box" style="background:var(--alert-soft);border-color:var(--alert)"></span> failure / pivot path</span>
+      </div>
+      <figcaption><b>Two gates keep it cheap to fail:</b> the pilot (before the metric is built) and robustness (before anything is scaled). Even the pivot path yields a paper.</figcaption>
+    </figure>
+
+    <div class="papers">
+      <div class="paper"><div class="top"><span class="pid">P1</span><h4>Survey &amp; gap map</h4><span class="role floor">floor</span></div><p>Map existing methods; establish the inference-error gap. Thesis background chapter.</p></div>
+      <div class="paper"><div class="top"><span class="pid">P2</span><h4>The benchmark</h4><span class="role floor">floor</span></div><p>Minimal pairs; evidence current metrics fail on the subtype. The substrate.</p></div>
+      <div class="paper up"><div class="top"><span class="pid">P3</span><h4>The metric (core)</h4><span class="role up">upside</span></div><p>The causal test; head-to-head vs MiniCheck, HalluTree, ReDeeP, LLM-judge, probe.</p></div>
+      <div class="paper"><div class="top"><span class="pid">P4</span><h4>Robustness &amp; OOD</h4><span class="role floor">floor</span></div><p>Paraphrase vs meaning-flip; cross-dataset transfer. Valuable even as a negative.</p></div>
+      <div class="paper up"><div class="top"><span class="pid">P5</span><h4>Mitigation</h4><span class="role up">upside</span></div><p>Steer off over-reach without collapsing to extraction; an incremental step, since related steering work exists.</p></div>
+      <div class="paper up"><div class="top"><span class="pid">P6</span><h4>Fast &amp; portable</h4><span class="role up">upside</span></div><p>Distil to a cheap student; extend to RAG, QA, dialogue, cross-lingual. Depends on the metric working.</p></div>
+    </div>
+  </section>
+
+  <section id="validation">
+    <div class="sec-head"><span class="sec-num">07</span><h2>Validation &amp; kill criteria</h2></div>
+    <div class="sec-rule"></div>
+    <ul class="clean">
+      <li><strong>Falsification pilot (go/no-go, first):</strong> ~200 hand-built pairs, does the signal separate fair from stretched? If not, pivot rather than build on a broken premise.</li>
+      <li class="t"><strong>Head-to-head:</strong> balanced accuracy / AUROC on the inference subtype plus human correlation, vs all baselines under a shared reader model.</li>
+      <li class="g"><strong>Robustness:</strong> ignore meaning-preserving paraphrase; react to a minimal meaning-flip.</li>
+      <li><strong>Out-of-distribution transfer:</strong> hold above chance across datasets, separating understanding from artifacts.</li>
+      <li class="t"><strong>Real-error validation:</strong> confirm on naturally occurring over-reach, not only synthetic pairs.</li>
+      <li class="g"><strong>Ablations:</strong> prove the causal test does the work, not the borrowed scaffolding.</li>
+    </ul>
+  </section>
+
+  <section id="timeline">
+    <div class="sec-head"><span class="sec-num">08</span><h2>Indicative timeline</h2></div>
+    <div class="sec-rule"></div>
+    <div class="tl">
+      <div class="row"><div><span class="ph">Phase 0 · Setup &amp; baselines</span><span class="dur">~3–4 wks</span></div><div class="d">Reproduce the observer probe, MiniCheck, and an activation-patching harness.</div></div>
+      <div class="row k"><div><span class="ph">Phase 1 · Falsification pilot</span><span class="dur">~4–6 wks</span></div><div class="d">The go/no-go. Publishable either way.</div></div>
+      <div class="row"><div><span class="ph">Phase 2 · Benchmark &amp; probe training</span><span class="dur">~2.5–3 mo</span></div><div class="d">Human adjudication is the long pole; start recruiting during Phase 1.</div></div>
+      <div class="row"><div><span class="ph">Phase 3 · Full pipeline &amp; head-to-head</span><span class="dur">~2.5–3 mo</span></div><div class="d">Integrate and benchmark against all baselines.</div></div>
+      <div class="row k"><div><span class="ph">Phase 4 · Robustness &amp; OOD</span><span class="dur">~1.5–2 mo</span></div><div class="d">The second make-or-break; potentially iterative.</div></div>
+      <div class="row"><div><span class="ph">Phase 5 · Distillation / extension</span><span class="dur">~1.5–2 mo</span></div><div class="d">Optional; a natural second-phase paper.</div></div>
+    </div>
+    <p class="muted">Core (Phases 0 to 4) is roughly 9 to 11 months of clean work, or about 12 to 15 months for a strong single paper with slippage, and 18 to 24 months for the full four-to-six paper arc. Submit the survey and benchmark early while the metric is built.</p>
+  </section>
+
+  <section id="references">
+    <div class="sec-head"><span class="sec-num">09</span><h2>References</h2></div>
+    <div class="sec-rule"></div>
+    <ul class="clean refs">
+      <li class="g">Trust but Verify: A Survey of Faithfulness Evaluation (RANLP 2025).</li>
+      <li class="g">HalluTree: Multi-hop Hallucination Detection (NewSum 2025).</li>
+      <li class="g">VeriGray: The Gray Zone of Faithfulness (2025).</li>
+      <li class="g">MiniCheck: Efficient Fact-Checking on Grounding Documents (EMNLP 2024).</li>
+      <li class="g">A Single Direction of Truth: An Observer-Model Probe for Contextual Hallucination (2025).</li>
+      <li class="g">Representation-based Detectors Fail to Generalize Out of Distribution (EMNLP 2025).</li>
+      <li class="g">ReDeeP: Detecting Hallucination in RAG via Mechanistic Interpretability (ICLR 2025).</li>
+      <li class="g">ContextFocus: Activation Steering for Contextual Faithfulness (recent preprint).</li>
+      <li class="g">Controllable Context Sensitivity and the Knob Behind It (2024).</li>
+    </ul>
+  </section>
+
+  <div class="contact" id="contact">
+    <div class="head-rule"></div>
+    <h2 style="font-family:'Spectral',serif; font-weight:600; font-size:1.4rem; margin:0">Contact</h2>
+    <div class="row">
+      <div class="item"><span class="lab">Name</span><span class="who">Ayesha Zafar</span></div>
+      <div class="item"><span class="lab">Background</span><span class="who">MSc Health Technology, University of Turku</span></div>
+      <div class="item"><span class="lab">Email</span><a href="mailto:ayesha.zafar.az625@gmail.com">ayesha.zafar.az625@gmail.com</a></div>
+      <div class="item"><span class="lab">LinkedIn</span><a href="https://www.linkedin.com/in/ayeshazafar-07" target="_blank" rel="noopener">linkedin.com/in/ayeshazafar-07</a></div>
+    </div>
+  </div>
+
+  </main>
+</div>
+
+<script>
+  (function(){
+    var links = Array.prototype.slice.call(document.querySelectorAll('.toc-inner a'));
+    var map = {};
+    links.forEach(function(a){ var id=a.getAttribute('href').slice(1); map[id]=a; });
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          links.forEach(function(l){ l.classList.remove('active'); });
+          var a = map[e.target.id]; if(a) a.classList.add('active');
+        }
+      });
+    }, {rootMargin:'-25% 0px -60% 0px', threshold:0});
+    document.querySelectorAll('section[id], div[id="contact"]').forEach(function(s){ obs.observe(s); });
+  })();
+</script>
+
+</body>
+</html>
