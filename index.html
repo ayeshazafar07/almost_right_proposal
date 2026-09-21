@@ -154,6 +154,11 @@
   .contact a{color:#FAD9E1; text-decoration:none}
   .contact .who{color:#FBEFEB; font-size:1rem}
 
+  @media (prefers-reduced-motion:no-preference){
+    html.anim .reveal{opacity:0; transform:translateY(20px); transition:opacity .6s cubic-bezier(.4,0,.2,1), transform .6s cubic-bezier(.4,0,.2,1); will-change:opacity,transform}
+    html.anim .reveal.in{opacity:1; transform:none}
+  }
+
   @media (max-width:900px){
     .shell{flex-direction:column; gap:0; padding:0}
     aside.toc{position:sticky; top:0; width:100%; margin-top:0; z-index:30}
@@ -238,7 +243,7 @@
     </ul>
     <div class="twrap">
     <table>
-      <thead><tr><th>Method</th><th>How it checks</th><th></th></tr></thead>
+      <thead><tr><th>Method</th><th>How it checks</th><th>Role here</th></tr></thead>
       <tbody>
         <tr><td><b>SummaC / INFUSE</b></td><td>sentence / sub-sentence entailment (NLI)</td><td><span class="tag b">borrowed</span></td></tr>
         <tr><td><b>QuestEval / QAFactEval</b></td><td>questions from summary, answered from source, compared</td><td><span class="tag b">borrowed</span></td></tr>
@@ -308,7 +313,7 @@
         <line x1="298" y1="168" x2="352" y2="184" stroke="var(--alert)" stroke-width="2" marker-end="url(#ahA)"/>
         <text x="362" y="184" font-size="12" fill="var(--alert)" font-weight="600">unchanged → over-reach ⚑</text>
         <text x="362" y="200" class="mono" font-size="10.5" fill="var(--ink-faint)">flag as hallucination</text>
-        <text x="0" y="234" font-size="11.5" fill="var(--ink-faint)">The <tspan font-weight="600" fill="var(--ink-soft)">difference</tspan> between A and B is the metric. Surface wording cannot fake it.</text>
+        <text x="0" y="234" font-size="11.5" fill="var(--ink-faint)">The <tspan font-weight="600" fill="var(--ink-soft)">difference</tspan> between A and B is the metric. Surface wording should not be able to fake it.</text>
       </svg>
       </div>
       <figcaption><b>The grounding-dependence test.</b> Existing probes only <i>read</i> an internal signal; this <i>intervenes</i>, removing the premise inside the model and measuring how much the conclusion depended on it.</figcaption>
@@ -407,11 +412,13 @@
     <ul class="clean">
       <li><strong>ReDeeP (ICLR 2025)</strong> detects RAG hallucination from a <em>correlational</em> internal reliance signal. Our distinction is a genuine <em>ablation</em> with the endorsement drop as the score.</li>
       <li class="t"><strong>ContextFocus (2026) &amp; “the knob” (2024)</strong> already steer generation along a context-reliance direction, so steering-based mitigation is largely pre-empted, and the direction’s existence is established (good for feasibility, not novelty).</li>
-      <li class="g"><strong>The sharpest wedge:</strong> all prior work targets <em>knowledge conflict</em>, the model ignoring context. Our error is the opposite: the model <em>uses</em> the quote but reasons wrongly from it. A “was the context attended?” signal passes our case, so this failure mode is unclaimed.</li>
+      <li class="g"><strong>The sharpest wedge:</strong> all prior work targets <em>knowledge conflict</em>, the model ignoring context. Our error is the opposite: the model <em>uses</em> the quote but reasons wrongly from it. A “was the context attended?” signal passes our case, and we have not found work that targets this failure mode.</li>
     </ul>
     <div class="note">
       <p class="lab">The central risk, stated plainly</p>
-      <p>The property that makes this case distinctive may also make activation methods fail on it: if the evidence is genuinely used, a “how much does it depend on the evidence?” signal could look identical for a fair conclusion and an over-reach. Whether the signal separates them is an open question, which is why the plan front-loads a falsification pilot. The most durable contributions are the <strong>benchmark</strong> and the <strong>error-type framing</strong>.</p>
+      <p>The property that makes this case distinctive may also make activation methods fail on it: if the evidence is genuinely used, a “how much does it depend on the evidence?” signal could look identical for a fair conclusion and an over-reach. Whether the signal separates them is an open question, which is why the plan front-loads a falsification pilot.</p>
+      <p style="margin-top:12px">The hardest case is false certainty. When “possible signs of cognitive decline” becomes “has cognitive decline”, the stretched claim leans entirely on the real text, so hiding the evidence may lower both versions equally. For that shape, a complementary claim-side test holds the evidence fixed and changes the claim instead: if the model endorses the unhedged version as strongly as the hedged one, it is not tracking what its evidence actually supports.</p>
+      <p style="margin-top:12px">The most durable contributions are the <strong>benchmark</strong> and the <strong>error-type framing</strong>.</p>
     </div>
   </section>
 
@@ -495,9 +502,9 @@
 
     <div class="papers">
       <div class="paper"><div class="top"><span class="pid">P1</span><h4>Survey &amp; gap map</h4><span class="role floor">floor</span></div><p>Map existing methods; establish the inference-error gap. Thesis background chapter.</p></div>
-      <div class="paper"><div class="top"><span class="pid">P2</span><h4>The benchmark</h4><span class="role floor">floor</span></div><p>Minimal pairs; evidence current metrics fail on the subtype. The substrate.</p></div>
+      <div class="paper"><div class="top"><span class="pid">P2</span><h4>The benchmark</h4><span class="role floor">floor</span></div><p>Minimal pairs, including a clinical slice (medication timelines, discontinued-then-referenced events, cross-record contradictions); evidence current metrics fail on the subtype.</p></div>
       <div class="paper up"><div class="top"><span class="pid">P3</span><h4>The metric (core)</h4><span class="role up">upside</span></div><p>The causal test; head-to-head vs MiniCheck, HalluTree, ReDeeP, LLM-judge, probe.</p></div>
-      <div class="paper"><div class="top"><span class="pid">P4</span><h4>Robustness &amp; OOD</h4><span class="role floor">floor</span></div><p>Paraphrase vs meaning-flip; cross-dataset transfer. Valuable even as a negative.</p></div>
+      <div class="paper"><div class="top"><span class="pid">P4</span><h4>Robustness &amp; OOD</h4><span class="role floor">floor</span></div><p>Paraphrase vs meaning-flip; cross-dataset transfer, including Finnish–English transfer on the clinical slice. Valuable even as a negative.</p></div>
       <div class="paper up"><div class="top"><span class="pid">P5</span><h4>Mitigation</h4><span class="role up">upside</span></div><p>Steer off over-reach without collapsing to extraction; an incremental step, since related steering work exists.</p></div>
       <div class="paper up"><div class="top"><span class="pid">P6</span><h4>Fast &amp; portable</h4><span class="role up">upside</span></div><p>Distil to a cheap student; extend to RAG, QA, dialogue, cross-lingual. Depends on the metric working.</p></div>
     </div>
@@ -507,7 +514,7 @@
     <div class="sec-head"><span class="sec-num">07</span><h2>Validation &amp; kill criteria</h2></div>
     <div class="sec-rule"></div>
     <ul class="clean">
-      <li><strong>Falsification pilot (go/no-go, first):</strong> ~200 hand-built pairs, does the signal separate fair from stretched? If not, pivot rather than build on a broken premise.</li>
+      <li><strong>Falsification pilot (go/no-go, first):</strong> ~200 hand-built pairs across the error shapes, including hedged/unhedged pairs for the claim-side test. Does either signal separate fair from stretched? If not, pivot rather than build on a broken premise.</li>
       <li class="t"><strong>Head-to-head:</strong> balanced accuracy / AUROC on the inference subtype plus human correlation, vs all baselines under a shared reader model.</li>
       <li class="g"><strong>Robustness:</strong> ignore meaning-preserving paraphrase; react to a minimal meaning-flip.</li>
       <li><strong>Out-of-distribution transfer:</strong> hold above chance across datasets, separating understanding from artifacts.</li>
@@ -519,29 +526,79 @@
   <section id="timeline">
     <div class="sec-head"><span class="sec-num">08</span><h2>Indicative timeline</h2></div>
     <div class="sec-rule"></div>
-    <div class="tl">
-      <div class="row"><div><span class="ph">Phase 0 · Setup &amp; baselines</span><span class="dur">~3–4 wks</span></div><div class="d">Reproduce the observer probe, MiniCheck, and an activation-patching harness.</div></div>
-      <div class="row k"><div><span class="ph">Phase 1 · Falsification pilot</span><span class="dur">~4–6 wks</span></div><div class="d">The go/no-go. Publishable either way.</div></div>
-      <div class="row"><div><span class="ph">Phase 2 · Benchmark &amp; probe training</span><span class="dur">~2.5–3 mo</span></div><div class="d">Human adjudication is the long pole; start recruiting during Phase 1.</div></div>
-      <div class="row"><div><span class="ph">Phase 3 · Full pipeline &amp; head-to-head</span><span class="dur">~2.5–3 mo</span></div><div class="d">Integrate and benchmark against all baselines.</div></div>
-      <div class="row k"><div><span class="ph">Phase 4 · Robustness &amp; OOD</span><span class="dur">~1.5–2 mo</span></div><div class="d">The second make-or-break; potentially iterative.</div></div>
-      <div class="row"><div><span class="ph">Phase 5 · Distillation / extension</span><span class="dur">~1.5–2 mo</span></div><div class="d">Optional; a natural second-phase paper.</div></div>
-    </div>
-    <p class="muted">Core (Phases 0 to 4) is roughly 9 to 11 months of clean work, or about 12 to 15 months for a strong single paper with slippage, and 18 to 24 months for the full four-to-six paper arc. Submit the survey and benchmark early while the metric is built.</p>
+    <figure>
+      <div class="figbar gold"><span class="n">Sequence</span><span class="t">Six phases, two make-or-break gates</span></div>
+      <div class="figbody scroll">
+      <svg viewBox="0 0 1000 190" role="img" aria-label="Timeline of six phases in order: Phase 0 setup and baselines, about 3 to 4 weeks; Phase 1 falsification pilot, about 4 to 6 weeks, a go/no-go gate; Phase 2 benchmark and probe training, about 2.5 to 3 months; Phase 3 full pipeline and head-to-head, about 2.5 to 3 months; Phase 4 robustness and out-of-distribution, about 1.5 to 2 months, a make-or-break gate; Phase 5 distillation and extension, about 1.5 to 2 months.">
+        <defs><marker id="tl" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><polygon points="0,1 8,4.5 0,8" fill="currentColor"/></marker></defs>
+        <line x1="154" y1="108" x2="172" y2="108" stroke="currentColor" stroke-width="1.6" marker-end="url(#tl)"/>
+        <line x1="322" y1="108" x2="340" y2="108" stroke="currentColor" stroke-width="1.6" marker-end="url(#tl)"/>
+        <line x1="490" y1="108" x2="508" y2="108" stroke="currentColor" stroke-width="1.6" marker-end="url(#tl)"/>
+        <line x1="658" y1="108" x2="676" y2="108" stroke="currentColor" stroke-width="1.6" marker-end="url(#tl)"/>
+        <line x1="826" y1="108" x2="844" y2="108" stroke="currentColor" stroke-width="1.6" marker-end="url(#tl)"/>
+
+        <rect x="6" y="48" width="148" height="120" rx="12" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"/>
+        <circle cx="80" cy="48" r="16" fill="var(--rose)"/><text x="80" y="53" text-anchor="middle" font-size="13" fill="#fff" font-weight="600" class="mono">0</text>
+        <text x="80" y="84" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)" class="mono">PHASE 0</text>
+        <text x="80" y="103" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">Setup &amp;</text>
+        <text x="80" y="118" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">baselines</text>
+        <text x="80" y="142" text-anchor="middle" font-size="10.5" fill="var(--teal-deep)" class="mono">~3–4 wks</text>
+
+        <rect x="174" y="48" width="148" height="120" rx="12" fill="var(--surface)" stroke="var(--gold-deep)" stroke-width="2"/>
+        <circle cx="248" cy="48" r="16" fill="var(--gold-deep)"/><text x="248" y="53" text-anchor="middle" font-size="13" fill="#fff" font-weight="600" class="mono">1</text>
+        <text x="248" y="84" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)" class="mono">PHASE 1</text>
+        <text x="248" y="103" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">Falsification</text>
+        <text x="248" y="118" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">pilot</text>
+        <text x="248" y="142" text-anchor="middle" font-size="10.5" fill="var(--teal-deep)" class="mono">~4–6 wks</text>
+        <text x="248" y="159" text-anchor="middle" font-size="9.5" fill="var(--alert)" class="mono">go / no-go</text>
+
+        <rect x="342" y="48" width="148" height="120" rx="12" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"/>
+        <circle cx="416" cy="48" r="16" fill="var(--rose)"/><text x="416" y="53" text-anchor="middle" font-size="13" fill="#fff" font-weight="600" class="mono">2</text>
+        <text x="416" y="84" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)" class="mono">PHASE 2</text>
+        <text x="416" y="103" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">Benchmark &amp;</text>
+        <text x="416" y="118" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">probe training</text>
+        <text x="416" y="142" text-anchor="middle" font-size="10.5" fill="var(--teal-deep)" class="mono">~2.5–3 mo</text>
+
+        <rect x="510" y="48" width="148" height="120" rx="12" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"/>
+        <circle cx="584" cy="48" r="16" fill="var(--rose)"/><text x="584" y="53" text-anchor="middle" font-size="13" fill="#fff" font-weight="600" class="mono">3</text>
+        <text x="584" y="84" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)" class="mono">PHASE 3</text>
+        <text x="584" y="103" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">Pipeline &amp;</text>
+        <text x="584" y="118" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">head-to-head</text>
+        <text x="584" y="142" text-anchor="middle" font-size="10.5" fill="var(--teal-deep)" class="mono">~2.5–3 mo</text>
+
+        <rect x="678" y="48" width="148" height="120" rx="12" fill="var(--surface)" stroke="var(--gold-deep)" stroke-width="2"/>
+        <circle cx="752" cy="48" r="16" fill="var(--gold-deep)"/><text x="752" y="53" text-anchor="middle" font-size="13" fill="#fff" font-weight="600" class="mono">4</text>
+        <text x="752" y="84" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)" class="mono">PHASE 4</text>
+        <text x="752" y="103" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">Robustness</text>
+        <text x="752" y="118" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">&amp; OOD</text>
+        <text x="752" y="142" text-anchor="middle" font-size="10.5" fill="var(--teal-deep)" class="mono">~1.5–2 mo</text>
+        <text x="752" y="159" text-anchor="middle" font-size="9.5" fill="var(--alert)" class="mono">make-or-break</text>
+
+        <rect x="846" y="48" width="148" height="120" rx="12" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"/>
+        <circle cx="920" cy="48" r="16" fill="var(--rose)"/><text x="920" y="53" text-anchor="middle" font-size="13" fill="#fff" font-weight="600" class="mono">5</text>
+        <text x="920" y="84" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)" class="mono">PHASE 5</text>
+        <text x="920" y="103" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">Distillation</text>
+        <text x="920" y="118" text-anchor="middle" font-size="12" fill="var(--ink)" font-weight="600">/ extension</text>
+        <text x="920" y="142" text-anchor="middle" font-size="10.5" fill="var(--teal-deep)" class="mono">~1.5–2 mo</text>
+      </svg>
+      </div>
+      <figcaption><b>The two gold gates are where the project can end or bend.</b> Phase 1 (the pilot) is go/no-go; Phase 4 (robustness and OOD) is the second make-or-break and may loop back. Human adjudication in Phase 2 is the long pole, so recruiting starts during Phase 1.</figcaption>
+    </figure>
+    <p class="muted">Core (Phases 0 to 4) is roughly 9 to 11 months of clean work, or about 12 to 15 months for a strong single paper with slippage, and 18 to 24 months for the full four-to-six paper arc. Submit the survey and benchmark early while the metric is built. The remaining time extends the metric to real Finnish care-record summaries with clinician review, the setting that motivated it.</p>
   </section>
 
   <section id="references">
     <div class="sec-head"><span class="sec-num">09</span><h2>References</h2></div>
     <div class="sec-rule"></div>
     <ul class="clean refs">
-      <li class="g">Trust but Verify: A Survey of Faithfulness Evaluation (RANLP 2025).</li>
-      <li class="g">HalluTree: Multi-hop Hallucination Detection (NewSum 2025).</li>
-      <li class="g">VeriGray: The Gray Zone of Faithfulness (2025).</li>
-      <li class="g">MiniCheck: Efficient Fact-Checking on Grounding Documents (EMNLP 2024).</li>
-      <li class="g">A Single Direction of Truth: An Observer-Model Probe for Contextual Hallucination (2025).</li>
-      <li class="g">Representation-based Detectors Fail to Generalize Out of Distribution (EMNLP 2025).</li>
-      <li class="g">ReDeeP: Detecting Hallucination in RAG via Mechanistic Interpretability (ICLR 2025).</li>
-      <li class="g">ContextFocus: Activation Steering for Contextual Faithfulness (recent preprint).</li>
+      <li class="g">Lamsiyah et al. Trust but Verify: A Survey of Faithfulness Evaluation (RANLP 2025).</li>
+      <li class="g">Oomen et al. HalluTree: Multi-hop Hallucination Detection (NewSum 2025).</li>
+      <li class="g">Ding et al. VeriGray: The Gray Zone of Faithfulness (2025).</li>
+      <li class="g">Tang et al. MiniCheck: Efficient Fact-Checking on Grounding Documents (EMNLP 2024).</li>
+      <li class="g">O’Neill et al. A Single Direction of Truth: An Observer-Model Probe for Contextual Hallucination (2025).</li>
+      <li class="g">Dubanowska et al. Representation-based Detectors Fail to Generalize Out of Distribution (EMNLP 2025).</li>
+      <li class="g">Sun et al. ReDeeP: Detecting Hallucination in RAG via Mechanistic Interpretability (ICLR 2025).</li>
+      <li class="g">Anand et al. ContextFocus: Activation Steering for Contextual Faithfulness (2026 preprint).</li>
       <li class="g">Controllable Context Sensitivity and the Knob Behind It (2024).</li>
     </ul>
   </section>
@@ -574,6 +631,32 @@
       });
     }, {rootMargin:'-25% 0px -60% 0px', threshold:0});
     document.querySelectorAll('section[id], div[id="contact"]').forEach(function(s){ obs.observe(s); });
+  })();
+
+  /* subtle scroll-reveal: gentle fade + rise as blocks enter view */
+  (function(){
+    if(!('IntersectionObserver' in window)) return;
+    var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+    if(mq && mq.matches) return;
+    document.documentElement.classList.add('anim');
+    var vh = window.innerHeight || 800;
+    // only animate blocks that load BELOW the fold; first screen stays visible at rest
+    function arm(el, delay){
+      if(el.getBoundingClientRect().top < vh - 60) return; // already visible on load
+      el.classList.add('reveal');
+      if(delay) el.style.transitionDelay = delay + 'ms';
+    }
+    document.querySelectorAll('main .callout, main .example, main figure, main .twrap, main .note').forEach(function(el){ arm(el, 0); });
+    document.querySelectorAll('main .stats').forEach(function(g){
+      Array.prototype.forEach.call(g.querySelectorAll('.stat'), function(el,i){ arm(el, i*80); });
+    });
+    document.querySelectorAll('main .papers').forEach(function(g){
+      Array.prototype.forEach.call(g.querySelectorAll('.paper'), function(el,i){ arm(el, i*70); });
+    });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, {threshold:0.08, rootMargin:'0px 0px -40px 0px'});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
   })();
 </script>
 
